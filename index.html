@@ -8,17 +8,34 @@
   <meta name="theme-color" content="#050505">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Terminal Simulator // nullSociety — Interactive Hacking Fiction">
   <title>Terminal Simulator // nullSociety</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="scanlines" aria-hidden="true"></div>
+  <!-- ====== HD CRT Layers ====== -->
+  <div class="crt-scanlines"  aria-hidden="true"></div>
+  <div class="crt-vignette"   aria-hidden="true"></div>
+  <div class="crt-flicker"    aria-hidden="true"></div>
 
+  <!-- ====== Top Status Bar ====== -->
+  <div class="status-bar">
+    <span class="status-item">IP: 10.0.2.15</span>
+    <span class="status-sep">|</span>
+    <span class="status-item status-proxy">PROXY: TOR_ACTIVE</span>
+    <span class="status-sep">|</span>
+    <span class="status-item status-log" id="statusLog">LOG: SAVED</span>
+  </div>
+
+  <!-- ====== Main Terminal ====== -->
   <div class="terminal">
     <header class="header">
       <span class="header-title">▌ nullSociety // secure_channel</span>
-      <button id="soundBtn" class="sound-btn" type="button" aria-label="Toggle sound">🔊</button>
+      <div class="header-buttons">
+        <button id="soundBtn" class="icon-btn" type="button" aria-label="Toggle sound">🔊</button>
+        <button id="menuBtn"  class="icon-btn" type="button" aria-label="Open menu">☰</button>
+      </div>
     </header>
 
     <main id="output" class="output" aria-live="polite" role="log"></main>
@@ -36,6 +53,60 @@
         autofocus
       >
     </form>
+  </div>
+
+  <!-- ====== Menu Overlay ====== -->
+  <div id="menuOverlay" class="menu-overlay" aria-hidden="true">
+    <div class="menu-panel" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
+      <div class="menu-header">
+        <h2 id="menuTitle" class="menu-title">⚙️ SYSTEM MENU</h2>
+        <button id="menuClose" class="icon-btn menu-close" type="button" aria-label="Close menu">✕</button>
+      </div>
+
+      <div class="menu-body">
+        <!-- Option A: Tutorial -->
+        <button class="menu-option" id="optTutorial" type="button">
+          <span class="menu-option-icon">📖</span>
+          <span class="menu-option-label" data-i18n="menu.tutorial">Tutorial / Manual Book</span>
+        </button>
+
+        <!-- Option B: Language -->
+        <button class="menu-option" id="optLanguage" type="button">
+          <span class="menu-option-icon">🌐</span>
+          <span class="menu-option-label" data-i18n="menu.language">Pilih Bahasa / Language</span>
+          <span class="menu-option-value" id="langValue">ID</span>
+        </button>
+
+        <!-- Option C: Reset -->
+        <button class="menu-option menu-option-danger" id="optReset" type="button">
+          <span class="menu-option-icon">🗑️</span>
+          <span class="menu-option-label" data-i18n="menu.reset">Reset Data</span>
+        </button>
+
+        <!-- Tutorial content (hidden by default) -->
+        <div class="tutorial-box" id="tutorialBox" hidden>
+          <div id="tutorialContent"></div>
+        </div>
+      </div>
+
+      <div class="menu-footer">
+        <span data-i18n="menu.footer">nullSociety client v2.1 — Educational simulation only</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== Confirm Reset Modal ====== -->
+  <div id="confirmOverlay" class="menu-overlay confirm-overlay" aria-hidden="true">
+    <div class="menu-panel confirm-panel" role="alertdialog" aria-modal="true">
+      <h3 id="confirmTitle" class="confirm-title">Reset Data?</h3>
+      <p id="confirmBody" class="confirm-body">
+        Semua progres akan dihapus dan cerita dimulai dari awal.
+      </p>
+      <div class="confirm-actions">
+        <button id="confirmCancel" class="btn btn-secondary" type="button">Batal</button>
+        <button id="confirmOk"     class="btn btn-danger"    type="button">Reset</button>
+      </div>
+    </div>
   </div>
 
   <script src="script.js"></script>
