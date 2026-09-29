@@ -1,19 +1,37 @@
 /* =========================================================
    Terminal Simulator // nullSociety
-   Retro hacker theme — mobile first
+   Premium HD CRT Theme — Mobile First
    ========================================================= */
 
 :root {
-  --bg:      #050505;
-  --neon:    #00ff00;
-  --danger:  #ff0033;
-  --dim:     #3a7a5a;
-  --warn:    #ffcc00;
-  --info:    #00d4ff;
-  --msg:     #ff5fb8;
-  --phantom: #b58cff;
-  --sys:     #7a8899;
-  --border:  #0a3a22;
+  --bg-deep:     #050505;
+  --bg-center:   #0c1f13;
+  --neon:        #00ff00;
+  --danger:      #ff0033;
+  --warn:        #ffcc00;
+  --info:        #00d4ff;
+  --msg:         #ff5fb8;
+  --phantom:     #b58cff;
+  --sys:         #7a8899;
+  --dim:         #3a7a5a;
+  --border:      #0a3a22;
+
+  /* Glow presets */
+  --glow-neon:   0 0 4px rgba(0, 255, 0, 0.60),
+                 0 0 12px rgba(0, 255, 0, 0.40);
+  --glow-neon-lg:0 0 6px rgba(0, 255, 0, 0.80),
+                 0 0 18px rgba(0, 255, 0, 0.55),
+                 0 0 32px rgba(0, 255, 0, 0.25);
+  --glow-danger: 0 0 4px rgba(255, 0, 51, 0.75),
+                 0 0 14px rgba(255, 0, 51, 0.50);
+  --glow-warn:   0 0 4px rgba(255, 204, 0, 0.75),
+                 0 0 14px rgba(255, 204, 0, 0.45);
+  --glow-info:   0 0 4px rgba(0, 212, 255, 0.70),
+                 0 0 12px rgba(0, 212, 255, 0.40);
+  --glow-msg:    0 0 4px rgba(255, 95, 184, 0.70),
+                 0 0 12px rgba(255, 95, 184, 0.40);
+  --glow-phantom:0 0 4px rgba(181, 140, 255, 0.70),
+                 0 0 12px rgba(181, 140, 255, 0.40);
 }
 
 * {
@@ -24,50 +42,145 @@
 
 html, body {
   height: 100%;
+  width: 100%;
   overflow: hidden;
-  background: var(--bg);
-  font-family: 'Courier New', 'Lucida Console', Courier, monospace;
+  background: var(--bg-deep);
   color: var(--neon);
+  font-family: 'Courier New', 'Lucida Console', Courier, monospace;
+  font-size: 14px;
+  line-height: 1.5;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* ---------- CRT Scanlines ---------- */
-.scanlines {
+/* =========================================================
+   CRT LAYERS
+   ========================================================= */
+
+/* 1. Phosphor radial glow */
+body::before {
+  content: "";
   position: fixed;
   inset: 0;
-  z-index: 10;
+  z-index: 0;
   pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0, 0, 0, 0.15) 0px,
-    rgba(0, 0, 0, 0.15) 1px,
-    transparent        1px,
-    transparent        3px
-  );
-  animation: flicker 0.2s infinite;
+  background: radial-gradient(circle at 50% 45%,
+              var(--bg-center) 0%,
+              #081610 35%,
+              var(--bg-deep) 80%);
+}
+
+/* 2. Micro-scanline (sub-pixel) */
+.crt-scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.22) 0px,
+      rgba(0, 0, 0, 0.22) 1px,
+      transparent           1px,
+      transparent           3px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 255, 0, 0.020) 0px,
+      rgba(0, 255, 0, 0.020) 1px,
+      transparent            1px,
+      transparent            3px
+    );
+  mix-blend-mode: multiply;
+  animation: scanShift 8s linear infinite;
+}
+
+@keyframes scanShift {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(3px); }
+}
+
+/* 3. Curved glass vignette */
+.crt-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 41;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center,
+      transparent 0%,
+      transparent 55%,
+      rgba(0, 0, 0, 0.35) 80%,
+      rgba(0, 0, 0, 0.75) 100%);
+  box-shadow:
+    inset 0 0 120px rgba(0, 0, 0, 0.85),
+    inset 0 0 40px  rgba(0, 0, 0, 0.6);
+}
+
+/* 4. Subtle flicker */
+.crt-flicker {
+  position: fixed;
+  inset: 0;
+  z-index: 42;
+  pointer-events: none;
+  background: rgba(0, 255, 0, 0.012);
+  animation: flicker 0.12s infinite;
 }
 
 @keyframes flicker {
-  0%, 100% { opacity: 0.95; }
-  50%      { opacity: 0.87; }
+  0%, 100% { opacity: 0.75; }
+  45%      { opacity: 0.55; }
+  55%      { opacity: 0.90; }
 }
 
-/* ---------- Terminal Shell ---------- */
+/* =========================================================
+   STATUS BAR (top)
+   ========================================================= */
+.status-bar {
+  position: relative;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 6px 10px;
+  padding-top: calc(6px + env(safe-area-inset-top, 0px));
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--dim);
+  text-shadow: 0 0 6px rgba(58, 122, 90, 0.8);
+  border-bottom: 1px solid rgba(10, 58, 34, 0.6);
+  background: linear-gradient(180deg, rgba(0, 20, 10, 0.75), rgba(0, 0, 0, 0.35));
+  backdrop-filter: blur(2px);
+}
+
+.status-item       { white-space: nowrap; }
+.status-sep        { color: #1a4a30; }
+.status-proxy      { color: var(--info); text-shadow: var(--glow-info); }
+.status-log.saved  { color: var(--neon); text-shadow: var(--glow-neon); }
+.status-log.dirty  { color: var(--warn); text-shadow: var(--glow-warn); }
+
+/* =========================================================
+   TERMINAL SHELL
+   ========================================================= */
 .terminal {
   position: relative;
-  z-index: 1;
-  height: 100vh;
-  height: 100dvh; /* dynamic viewport untuk mobile */
+  z-index: 30;
   display: flex;
   flex-direction: column;
-  padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
-  font-size: 14px;
-  line-height: 1.5;
+  height: calc(100vh - 28px);
+  height: calc(100dvh - 28px - env(safe-area-inset-top, 0px));
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
 }
 
-/* ---------- Header ---------- */
+/* =========================================================
+   HEADER
+   ========================================================= */
 .header {
   display: flex;
   justify-content: space-between;
@@ -81,43 +194,64 @@ html, body {
   padding-bottom: 8px;
   border-bottom: 1px dashed var(--border);
   margin-bottom: 10px;
-  text-shadow: 0 0 6px var(--danger);
+  text-shadow: var(--glow-danger);
 }
 
 .header-title {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 
-.sound-btn {
-  background: transparent;
+.header-buttons {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  background: rgba(0, 0, 0, 0.4);
   border: 1px solid #0a5a33;
   color: var(--neon);
   font-family: inherit;
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 3px;
+  font-size: 14px;
+  line-height: 1;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
   cursor: pointer;
-  flex-shrink: 0;
+  padding: 0;
+  text-shadow: var(--glow-neon);
+  transition: background 0.15s, border-color 0.15s;
 }
-.sound-btn:active { background: var(--border); }
+.icon-btn:active,
+.icon-btn:hover {
+  background: rgba(0, 255, 0, 0.12);
+  border-color: var(--neon);
+}
 
-/* ---------- Output ---------- */
+/* =========================================================
+   OUTPUT
+   ========================================================= */
 .output {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 4px;
-  white-space: pre-wrap;       /* teks turun ke bawah, tidak scroll horizontal */
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
   word-wrap: break-word;
-  text-shadow: 0 0 4px rgba(0, 255, 0, 0.5);
+  text-shadow: var(--glow-neon);
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
 }
 
 .output::-webkit-scrollbar { width: 3px; }
+.output::-webkit-scrollbar-track { background: transparent; }
 .output::-webkit-scrollbar-thumb {
   background: #0a5a33;
   border-radius: 2px;
@@ -126,20 +260,32 @@ html, body {
 .line {
   margin-bottom: 2px;
   min-height: 1em;
+  text-shadow: var(--glow-neon);
 }
 
-/* ---------- Line Colors ---------- */
-.cmd     { color: var(--danger); }
-.warn    { color: var(--warn); }
-.err     { color: var(--danger); }
-.ok      { color: var(--neon); font-weight: bold; }
-.dim     { color: var(--dim); }
-.info    { color: var(--info); }
-.msg     { color: var(--msg); }
-.phantom { color: var(--phantom); font-style: italic; }
-.sys     { color: var(--sys); }
+/* Line color classes */
+.cmd     { color: var(--danger); text-shadow: var(--glow-danger); }
+.warn    { color: var(--warn);   text-shadow: var(--glow-warn); }
+.err     { color: var(--danger); text-shadow: var(--glow-danger); }
+.ok      { color: var(--neon);   text-shadow: var(--glow-neon-lg); font-weight: bold; }
+.dim     { color: var(--dim);    text-shadow: none; }
+.info    { color: var(--info);   text-shadow: var(--glow-info); }
+.msg     { color: var(--msg);    text-shadow: var(--glow-msg); }
+.phantom { color: var(--phantom); text-shadow: var(--glow-phantom); font-style: italic; }
+.sys     { color: var(--sys);    text-shadow: none; }
 
-/* ---------- Input Area ---------- */
+/* Blinking critical warning */
+.blink {
+  animation: blinkDanger 0.75s steps(2, start) infinite;
+}
+@keyframes blinkDanger {
+  0%, 49%  { opacity: 1;   text-shadow: var(--glow-danger); }
+  50%, 100%{ opacity: 0.15; text-shadow: none; }
+}
+
+/* =========================================================
+   INPUT AREA
+   ========================================================= */
 .input-area {
   display: flex;
   align-items: center;
@@ -155,7 +301,7 @@ html, body {
   margin-right: 6px;
   flex-shrink: 0;
   font-size: 13px;
-  text-shadow: 0 0 6px var(--danger);
+  text-shadow: var(--glow-danger);
 }
 
 .cmd-input {
@@ -168,10 +314,270 @@ html, body {
   font-family: inherit;
   font-size: inherit;
   caret-color: var(--neon);
-  text-shadow: 0 0 4px rgba(0, 255, 0, 0.6);
+  text-shadow: var(--glow-neon);
 }
 
 .cmd-input:read-only {
-  opacity: 0.55;
+  opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* =========================================================
+   MENU OVERLAY
+   ========================================================= */
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.18s ease-out;
+}
+.menu-overlay.open {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.menu-panel {
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(180deg,
+              rgba(5, 25, 15, 0.98) 0%,
+              rgba(2, 10, 6, 0.98)  100%);
+  border: 1px solid #0a5a33;
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 0, 0.08),
+    0 0 24px rgba(0, 255, 0, 0.22),
+    inset 0 0 60px rgba(0, 255, 0, 0.04);
+  animation: panelIn 0.22s ease-out;
+}
+
+@keyframes panelIn {
+  from { transform: scale(0.94); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; }
+}
+
+.menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.menu-title {
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  color: var(--danger);
+  text-shadow: var(--glow-danger);
+  font-weight: bold;
+}
+
+.menu-close {
+  font-size: 12px;
+  width: 26px;
+  height: 26px;
+}
+
+.menu-body {
+  padding: 12px;
+  overflow-y: auto;
+  flex: 1;
+}
+.menu-body::-webkit-scrollbar { width: 3px; }
+.menu-body::-webkit-scrollbar-thumb { background: #0a5a33; }
+
+.menu-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 14px;
+  margin-bottom: 8px;
+  background: rgba(0, 40, 20, 0.35);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--neon);
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  text-shadow: var(--glow-neon);
+  transition: background 0.15s, border-color 0.15s;
+}
+.menu-option:hover,
+.menu-option:active {
+  background: rgba(0, 255, 0, 0.12);
+  border-color: var(--neon);
+}
+
+.menu-option-icon { font-size: 18px; flex-shrink: 0; }
+.menu-option-label { flex: 1; }
+.menu-option-value {
+  font-weight: bold;
+  color: var(--info);
+  text-shadow: var(--glow-info);
+  letter-spacing: 1px;
+}
+
+.menu-option-danger {
+  color: var(--danger);
+  border-color: rgba(255, 0, 51, 0.35);
+  text-shadow: var(--glow-danger);
+}
+.menu-option-danger:hover,
+.menu-option-danger:active {
+  background: rgba(255, 0, 51, 0.12);
+  border-color: var(--danger);
+}
+
+/* Tutorial box */
+.tutorial-box {
+  margin-top: 10px;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--neon);
+  text-shadow: var(--glow-neon);
+  animation: fadeIn 0.2s ease-out;
+}
+.tutorial-box h4 {
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: var(--danger);
+  text-shadow: var(--glow-danger);
+  margin-bottom: 8px;
+  margin-top: 4px;
+}
+.tutorial-box p { margin-bottom: 8px; }
+.tutorial-box ul {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 8px;
+}
+.tutorial-box li {
+  padding: 3px 0 3px 16px;
+  position: relative;
+  color: var(--neon);
+}
+.tutorial-box li::before {
+  content: "▸";
+  position: absolute;
+  left: 0;
+  color: var(--info);
+  text-shadow: var(--glow-info);
+}
+.tutorial-box code {
+  color: var(--warn);
+  text-shadow: var(--glow-warn);
+  font-family: inherit;
+  background: rgba(255, 204, 0, 0.08);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.menu-footer {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  color: var(--dim);
+  text-align: center;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+/* =========================================================
+   CONFIRM MODAL
+   ========================================================= */
+.confirm-overlay { z-index: 110; }
+
+.confirm-panel {
+  max-width: 340px;
+  padding: 18px 18px 14px;
+}
+
+.confirm-title {
+  font-size: 14px;
+  letter-spacing: 1px;
+  color: var(--danger);
+  text-shadow: var(--glow-danger);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.confirm-body {
+  font-size: 12px;
+  color: var(--neon);
+  text-shadow: var(--glow-neon);
+  text-align: center;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn {
+  flex: 1;
+  padding: 10px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  letter-spacing: 1px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 1px solid;
+  transition: background 0.15s, transform 0.1s;
+  font-weight: bold;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn-secondary {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: var(--border);
+  color: var(--neon);
+  text-shadow: var(--glow-neon);
+}
+.btn-secondary:hover { background: rgba(0, 255, 0, 0.10); }
+
+.btn-danger {
+  background: rgba(255, 0, 51, 0.15);
+  border-color: var(--danger);
+  color: var(--danger);
+  text-shadow: var(--glow-danger);
+}
+.btn-danger:hover { background: rgba(255, 0, 51, 0.28); }
+
+/* =========================================================
+   RESPONSIVE / SMALL SCREENS
+   ========================================================= */
+@media (max-width: 360px) {
+  html, body { font-size: 13px; }
+  .header-title { font-size: 10px; }
+  .status-bar   { font-size: 9px; }
+  .menu-panel   { max-width: 96%; }
+}
+
+@media (max-height: 500px) {
+  .terminal { padding-top: 6px; }
+  .header   { margin-bottom: 6px; padding-bottom: 6px; }
 }
