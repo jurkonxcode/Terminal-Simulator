@@ -1,0 +1,177 @@
+/* =========================================================
+   Terminal Simulator // nullSociety
+   Retro hacker theme — mobile first
+   ========================================================= */
+
+:root {
+  --bg:      #050505;
+  --neon:    #00ff00;
+  --danger:  #ff0033;
+  --dim:     #3a7a5a;
+  --warn:    #ffcc00;
+  --info:    #00d4ff;
+  --msg:     #ff5fb8;
+  --phantom: #b58cff;
+  --sys:     #7a8899;
+  --border:  #0a3a22;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: 'Courier New', 'Lucida Console', Courier, monospace;
+  color: var(--neon);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ---------- CRT Scanlines ---------- */
+.scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent        1px,
+    transparent        3px
+  );
+  animation: flicker 0.2s infinite;
+}
+
+@keyframes flicker {
+  0%, 100% { opacity: 0.95; }
+  50%      { opacity: 0.87; }
+}
+
+/* ---------- Terminal Shell ---------- */
+.terminal {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  height: 100dvh; /* dynamic viewport untuk mobile */
+  display: flex;
+  flex-direction: column;
+  padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- Header ---------- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  color: var(--danger);
+  font-weight: bold;
+  font-size: 11px;
+  letter-spacing: 1px;
+  padding-bottom: 8px;
+  border-bottom: 1px dashed var(--border);
+  margin-bottom: 10px;
+  text-shadow: 0 0 6px var(--danger);
+}
+
+.header-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sound-btn {
+  background: transparent;
+  border: 1px solid #0a5a33;
+  color: var(--neon);
+  font-family: inherit;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sound-btn:active { background: var(--border); }
+
+/* ---------- Output ---------- */
+.output {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  white-space: pre-wrap;       /* teks turun ke bawah, tidak scroll horizontal */
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+  text-shadow: 0 0 4px rgba(0, 255, 0, 0.5);
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.output::-webkit-scrollbar { width: 3px; }
+.output::-webkit-scrollbar-thumb {
+  background: #0a5a33;
+  border-radius: 2px;
+}
+
+.line {
+  margin-bottom: 2px;
+  min-height: 1em;
+}
+
+/* ---------- Line Colors ---------- */
+.cmd     { color: var(--danger); }
+.warn    { color: var(--warn); }
+.err     { color: var(--danger); }
+.ok      { color: var(--neon); font-weight: bold; }
+.dim     { color: var(--dim); }
+.info    { color: var(--info); }
+.msg     { color: var(--msg); }
+.phantom { color: var(--phantom); font-style: italic; }
+.sys     { color: var(--sys); }
+
+/* ---------- Input Area ---------- */
+.input-area {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  margin-top: 8px;
+}
+
+.prompt {
+  color: var(--danger);
+  font-weight: bold;
+  margin-right: 6px;
+  flex-shrink: 0;
+  font-size: 13px;
+  text-shadow: 0 0 6px var(--danger);
+}
+
+.cmd-input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--neon);
+  font-family: inherit;
+  font-size: inherit;
+  caret-color: var(--neon);
+  text-shadow: 0 0 4px rgba(0, 255, 0, 0.6);
+}
+
+.cmd-input:read-only {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
