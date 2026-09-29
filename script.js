@@ -1,6 +1,7 @@
 /* =========================================================
    Terminal Simulator // nullSociety
    Interactive Hacking Fiction
+   File: script.js
    ========================================================= */
 
 (() => {
@@ -9,10 +10,10 @@
   /* =======================================================
      1. DOM REFERENCES
      ======================================================= */
-  const $output  = document.getElementById('output');
-  const $input   = document.getElementById('cmd');
-  const $form    = document.getElementById('inputForm');
-  const $prompt  = document.getElementById('prompt');
+  const $output   = document.getElementById('output');
+  const $input    = document.getElementById('cmd');
+  const $form     = document.getElementById('inputForm');
+  const $prompt   = document.getElementById('prompt');
   const $soundBtn = document.getElementById('soundBtn');
 
   /* =======================================================
@@ -45,6 +46,10 @@
       return enabled;
     }
 
+    function isEnabled() {
+      return enabled;
+    }
+
     /* --- Internal beep helper --- */
     function beep(freq, dur, type = 'sine', vol = 0.05, delay = 0) {
       if (!enabled || !ctx) return;
@@ -55,7 +60,8 @@
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(vol, t);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      osc.connect(gain).connect(ctx.destination);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
       osc.start(t);
       osc.stop(t + dur + 0.02);
     }
@@ -64,7 +70,7 @@
     function keyClick() {
       if (!enabled || !ctx) return;
       const now = performance.now();
-      if (now - lastClick < 22) return; // throttle
+      if (now - lastClick < 22) return;
       lastClick = now;
 
       const t = ctx.currentTime;
@@ -76,7 +82,8 @@
       o1.frequency.value = 1400 + Math.random() * 500;
       g1.gain.setValueAtTime(0.022, t);
       g1.gain.exponentialRampToValueAtTime(0.0001, t + 0.025);
-      o1.connect(g1).connect(ctx.destination);
+      o1.connect(g1);
+      g1.connect(ctx.destination);
       o1.start(t);
       o1.stop(t + 0.03);
 
@@ -87,7 +94,8 @@
       o2.frequency.value = 100 + Math.random() * 50;
       g2.gain.setValueAtTime(0.040, t);
       g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
-      o2.connect(g2).connect(ctx.destination);
+      o2.connect(g2);
+      g2.connect(ctx.destination);
       o2.start(t);
       o2.stop(t + 0.05);
     }
@@ -96,13 +104,19 @@
       init,
       resume,
       toggle,
+      isEnabled,
       keyClick,
       ok()    { beep(660, 0.08); beep(990, 0.12, 'sine', 0.05, 0.08); },
       error() { beep(160, 0.18, 'sawtooth', 0.06); },
-      alert() { beep(220, 0.15, 'sawtooth', 0.06);
-                beep(180, 0.18, 'sawtooth', 0.06, 0.16); },
-      boot()  { beep(330, 0.05); beep(440, 0.05, 'sine', 0.05, 0.08);
-                beep(660, 0.10, 'sine', 0.05, 0.16); }
+      alert() {
+        beep(220, 0.15, 'sawtooth', 0.06);
+        beep(180, 0.18, 'sawtooth', 0.06, 0.16);
+      },
+      boot() {
+        beep(330, 0.05);
+        beep(440, 0.05, 'sine', 0.05, 0.08);
+        beep(660, 0.10, 'sine', 0.05, 0.16);
+      }
     };
   })();
 
@@ -162,7 +176,7 @@
 
       let i = 0;
       const len = text.length;
-      const chunkSize = len > 60 ? 2 : 1; // percepat baris panjang
+      const chunkSize = len > 60 ? 2 : 1;
 
       const tick = () => {
         if (i >= len) { resolve(); return; }
@@ -177,7 +191,7 @@
     });
   }
 
-  /* Typewriter beberapa baris sekaligus (input di-readOnly selama mengetik) */
+  /* Typewriter beberapa baris sekaligus */
   async function typeLines(lines, baseSpeed = 18) {
     $input.readOnly = true;
     for (const item of lines) {
@@ -301,10 +315,10 @@
   ];
 
   const MISSIONS = {
-    1: { expected: 'scan',                     help: 'scan',                     output: MISSION_OUTPUT[1] },
-    2: { expected: 'run-exploit --port 8080',  help: 'run-exploit --port 8080',  output: MISSION_OUTPUT[2] },
-    3: { expected: 'set-temp --room-all 60c',  help: 'set-temp --room-all 60C',  output: MISSION_OUTPUT[3] },
-    4: { expected: 'clear-log',                help: 'clear-log',                output: MISSION_OUTPUT[4] }
+    1: { expected: 'scan',                    help: 'scan',                    output: MISSION_OUTPUT[1] },
+    2: { expected: 'run-exploit --port 8080', help: 'run-exploit --port 8080', output: MISSION_OUTPUT[2] },
+    3: { expected: 'set-temp --room-all 60c', help: 'set-temp --room-all 60C', output: MISSION_OUTPUT[3] },
+    4: { expected: 'clear-log',               help: 'clear-log',               output: MISSION_OUTPUT[4] }
   };
 
   /* =======================================================
@@ -321,7 +335,7 @@
 
     if (m >= 1 && m <= 4) {
       appendLine('', '');
-      appendLine(`>> Perintah misi aktif:`, 'info');
+      appendLine('>> Perintah misi aktif:', 'info');
       appendLine(`   ${MISSIONS[m].help}`, 'ok');
     }
     appendLine('', '');
@@ -342,7 +356,7 @@
       saveState();
       updatePrompt();
     } else {
-      state.mission = 5; // selesai
+      state.mission = 5;
       saveState();
       updatePrompt();
       await wait(900);
@@ -354,7 +368,7 @@
     const norm = normalize(raw);
     if (!norm) return;
 
-    // Echo perintah
+    // Echo perintah yang diketik
     appendLine($prompt.textContent + ' ' + raw, 'cmd');
 
     const first = norm.split(' ')[0];
@@ -362,6 +376,7 @@
     // Perintah universal
     if (first === 'help')    { showHelp(); return; }
     if (first === 'clear')   { $output.innerHTML = ''; return; }
+
     if (first === 'restart') {
       appendLine('[*] Merestart simulasi...', 'warn');
       Sfx.error();
@@ -388,7 +403,7 @@
     // Salah perintah
     Sfx.error();
     appendLine(`perintah tidak dikenal: '${raw}'`, 'err');
-    appendLine(`Ketik 'help' untuk melihat perintah yang tersedia.`, 'dim');
+    appendLine("Ketik 'help' untuk melihat perintah yang tersedia.", 'dim');
   }
 
   /* =======================================================
@@ -398,7 +413,7 @@
   // Submit perintah (Enter)
   $form.addEventListener('submit', (e) => {
     e.preventDefault();
-    if ($input.readOnly) return;      // sedang mengetik animasi
+    if ($input.readOnly) return;
 
     const raw = $input.value;
     $input.value = '';
@@ -438,13 +453,13 @@
     updatePrompt();
 
     if (state.fresh && state.mission === 1) {
-      // Sesi baru — tampilkan prolog
+      // Sesi baru
       setTimeout(() => Sfx.boot(), 250);
       await typeLines(PROLOG, 20);
       state.fresh = false;
       saveState();
     } else if (state.mission > 4) {
-      // Sesi sebelumnya sudah tamat
+      // Sudah tamat
       appendLine('[SYSTEM] Sesi sebelumnya telah selesai.', 'sys');
       appendLine("Ketik 'restart' untuk mengulang dari awal.", 'dim');
       appendLine('', '');
